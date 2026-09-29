@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kids Trivia Video Builder</title>
+  <style>
+    :root { --bg:#f6f3ff; --ink:#3b2a63; --accent:#7c5cd6; --ok:#19d06c; }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    body { margin:0; background:var(--bg); color:var(--ink); display:flex; justify-content:center; padding:32px 16px; }
+    .card { width:100%; max-width:560px; background:#fff; border-radius:20px; padding:28px; box-shadow:0 12px 40px rgba(60,40,120,.12); }
+    h1 { margin:0 0 4px; font-size:24px; }
+    p.sub { margin:0 0 20px; color:#7a6ca0; font-size:14px; }
+    label { display:block; font-size:13px; font-weight:600; margin:14px 0 6px; }
+    input, textarea { width:100%; padding:10px 12px; border:1.5px solid #ddd4f2; border-radius:10px; font-size:14px; }
+    textarea { min-height:74px; resize:vertical; }
+    button { margin-top:20px; width:100%; padding:13px; border:0; border-radius:12px; background:var(--accent); color:#fff; font-size:16px; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:wait; }
+    video { margin-top:22px; width:100%; border-radius:16px; background:#000; display:none; }
+    .status { margin-top:12px; font-size:13px; min-height:18px; }
+    .err { color:#d33; } .ok { color:var(--ok); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🧒 Kids Trivia Video Builder</h1>
+    <p class="sub">Generates a 9:16 (1080×1920) 10-second YouTube Short with countdown + answer reveal.</p>
+
+    <label for="question">Question</label>
+    <input id="question" value="Which animal is the tallest in the world?" />
+
+    <label for="options">Options (one per line)</label>
+    <textarea id="options">A) Elephant
+B) Giraffe
+C) Blue Whale</textarea>
+
+    <label for="correct">Correct answer (must match an option exactly)</label>
+    <input id="correct" value="B) Giraffe" />
+
+    <button id="go">Generate video</button>
+    <div class="status" id="status"></div>
+    <video id="player" controls playsinline></video>
+  </div>
+
+  <script>
+    const btn = document.getElementById('go');
+    const statusEl = document.getElementById('status');
+    const player = document.getElementById('player');
+
+    btn.addEventListener('click', async () => {
+      const options = document.getElementById('options').value.split('\n').map(s => s.trim()).filter(Boolean);
+      const payload = {
+        question: document.getElementById('question').value.trim(),
+        options,
+        correct_answer: document.getElementById('correct').value.trim(),
+        profile: 'draft',   // switch to 'full' for final 1080x1920 renders
+      };
+      btn.disabled = true;
+      statusEl.textContent = 'Rendering… this can take up to a minute.';
+      statusEl.className = 'status';
+      try {
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || res.statusText);
+        const blob = await res.blob();
+        player.src = URL.createObjectURL(blob);
+        player.style.display = 'block';
+        player.play();
+        statusEl.textContent = `Done — ${(blob.size / 1048576).toFixed(2)} MB MP4.`;
+        statusEl.classList.add('ok');
+      } catch (err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        statusEl.classList.add('err');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+__pycache__/
+node_modules/
+.next/
+dist/
+build/
+*.log
+.vercel/
+output/
+*.mp4
+.pytest_cache/
+.venv/
+venv/
