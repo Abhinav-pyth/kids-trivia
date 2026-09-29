@@ -1,0 +1,13 @@
+# ---- Kids Trivia Video Builder -- Vercel Python runtime dependencies ----
+# Vercel's @vercel/python builder installs requirements.txt automatically.
+# ffmpeg is provided by imageio-ffmpeg (ships a static ffmpeg binary), so no
+# system package manager step is needed on the serverless image.
+
+fastapi==0.116.1
+pydantic==2.11.7
+uvicorn[standard]==0.35.0
+
+moviepy==2.2.1
+imageio-ffmpeg>=0.6,<1
+numpy>=1.26,<3
+pillow>=10.4

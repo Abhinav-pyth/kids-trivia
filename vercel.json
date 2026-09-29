@@ -1,0 +1,52 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "projectSlug": "kids-trivia-video-builder",
+
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "buildCommand": "echo 'no build step required for the Python API'"
+      }
+    },
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/api/generate/?$", "methods": ["POST"], "dest": "api/index.py" },
+    { "src": "/api/generate/sample/?$", "methods": ["GET"], "dest": "api/index.py" },
+    { "src": "/health/?$", "methods": ["GET"], "dest": "api/index.py" },
+    { "src": "/docs/?$", "methods": ["GET"], "dest": "api/index.py" },
+    { "src": "/openapi.json$", "methods": ["GET"], "dest": "api/index.py" },
+    { "src": "/(.*)", "dest": "api/index.py" }
+  ],
+
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 300,
+      "memory": 1024
+    }
+  },
+
+  "env": {
+    "TRIVIA_OUTPUT_DIR": "/tmp"
+  },
+
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
+      ]
+    }
+  ]
+}

@@ -835,9 +835,9 @@ class KidsTriviaVideoBuilder:
             fps=cfg.fps,
             codec=cfg.codec,                    # libx264 -> H.264
             preset=cfg.preset,
-            crf=cfg.crf,
             audio_codec="aac" if cfg.audio_enabled else None,
             ffmpeg_params=[
+                "-crf", str(cfg.crf),           # constant rate factor (quality)
                 "-pix_fmt", cfg.pix_fmt,        # browser/mobile compatibility
                 "-profile:v", cfg.profile,
                 "-maxrate", cfg.maxrate,
